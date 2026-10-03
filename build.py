@@ -15,6 +15,7 @@ MINT = "#4ADE80"
 CYAN = "#22D3EE"
 AMBER = "#E3B341"
 OFF = "#2A313B"
+RED = "#F85149"
 
 PROMPT = [("donnie@homelab", GREEN, 700), (":", TEXT), ("~", BLUE, 700), ("$", TEXT)]
 PROMPT_LEN = len("donnie@homelab:~$ ")
@@ -124,7 +125,13 @@ def scanlines(w, h, bar=36):
     return f'<rect x="1" y="{bar + 1}" width="{w - 2}" height="{h - bar - 2}" fill="url(#scan)" pointer-events="none"/>'
 
 
-def neofetch():
+def duration(seconds):
+    d, rest = divmod(int(seconds), 86400)
+    h, rest = divmod(rest, 3600)
+    return f"{d}d {h}h" if d else f"{h}h {rest // 60}m"
+
+
+def neofetch(live=None):
     w, h, fs = 840, 400, 14
     x0 = 28
     defs, body = [], []
@@ -166,15 +173,24 @@ def neofetch():
     rack.append(f'<circle cx="{inner_x + inner_w - 12}" cy="{sy + unit / 2}" r="2.6" fill="{GREEN}"/>')
 
     roles = {1: ("k3s", GREEN), 2: ("k3s", GREEN), 3: ("k3s", GREEN), 4: ("pve", CYAN)}
+    up = {n: (live["up"].get(n, False) if live else True) for n in roles}
     for n in range(1, 13):
         uy = ry + 8 + n * (unit + gap)
-        online = n in roles
-        rack.append(f'<rect x="{inner_x + 2}" y="{uy}" width="{inner_w - 4}" height="{unit}" rx="2" fill="{"#161C24" if online else "#11151B"}" stroke="{LINE}"/>')
-        rack.append(f'<text x="{inner_x + 9}" y="{uy + 12}" font-size="8.5" fill="{TEXT if online else "#4A525D"}">node-{n:02d}</text>')
+        online = n in roles and up[n]
+        down = n in roles and not up[n]
+        rack.append(f'<rect x="{inner_x + 2}" y="{uy}" width="{inner_w - 4}" height="{unit}" rx="2" fill="{"#161C24" if n in roles else "#11151B"}" stroke="{LINE}"/>')
+        label = TEXT if online else ("#C9787A" if down else "#4A525D")
+        rack.append(f'<text x="{inner_x + 9}" y="{uy + 12}" font-size="8.5" fill="{label}">node-{n:02d}</text>')
         for v in range(12):
             vx = inner_x + 70 + v * 5
             rack.append(f'<rect x="{vx}" y="{uy + 5}" width="2" height="7" rx="1" fill="#0B0E13"/>')
-        if online:
+        if down:
+            rack.append(f'<text x="{inner_x + 142}" y="{uy + 12}" font-size="8.5" font-weight="700" fill="{RED}">down</text>')
+            rack.append(
+                f'<circle cx="{inner_x + inner_w - 12}" cy="{uy + unit / 2}" r="3" fill="{RED}">'
+                f'<animate attributeName="opacity" values="1;0.25;1" dur="1.2s" repeatCount="indefinite"/></circle>'
+            )
+        elif online:
             tag, color = roles[n]
             t_on = t_out + 0.15 + n * 0.18
             rack.append(f'<text x="{inner_x + 142}" y="{uy + 12}" font-size="8.5" font-weight="700" fill="{color}">{tag}{fade_in(t_on, 0.2)}</text>')
@@ -194,28 +210,56 @@ def neofetch():
     body.append(f"<g>{''.join(rack)}</g>")
 
     ix, lh = 306, 23
-    info = [
-        ("Rack", "42U · 12x HP EliteDesk 800 G1"),
-        ("Online", "4 / 12 nodes"),
-        ("CPU", "i5-4570S · 4 cores · 8 GB each"),
-        ("Cluster", "k3s HA · 3 servers · embedded etcd"),
-        ("Database", "CloudNativePG · Postgres x3"),
-        ("Virt", "Proxmox VE 9 · private game hosting"),
-        ("Ingress", "Cloudflare Tunnel → Traefik"),
-        ("Failover", "~60 s · tested by pulling the plug"),
-        ("Switch", "D-Link DGS-1224T · 24x GbE"),
-        ("Mounts", "3D-printed EliteDesk sleeves"),
-    ]
+    if live:
+        n_up = sum(up.values())
+        k_up = sum(up[n] for n in (1, 2, 3))
+        pve = live.get("pve")
+        info = [
+            ("Rack", [("42U · 12x HP EliteDesk 800 G1", TEXT)]),
+            ("Online", [(f"{n_up} / 12 nodes", GREEN if n_up == len(roles) else AMBER, 700)]),
+            ("Cluster", [("k3s HA · ", TEXT), (f"{k_up}/3", GREEN if k_up == 3 else RED, 700), (" nodes reachable", TEXT)]),
+            ("Proxmox", [("node-04 · up ", TEXT), (duration(pve["uptime"]) if pve else "n/a", CYAN, 700)]),
+            ("Load", [(f"CPU {pve['cpu'] * 100:.0f}% · RAM {pve['mem'] * 100:.0f}%" if pve else "n/a", TEXT)]),
+            ("CPU", [("i5-4570S · 4 cores · 8 GB each", TEXT)]),
+            ("Database", [("CloudNativePG · Postgres x3", TEXT)]),
+            ("Ingress", [("Cloudflare Tunnel → Traefik", TEXT)]),
+            ("Failover", [("~60 s · tested by pulling the plug", TEXT)]),
+            ("Mounts", [("3D-printed EliteDesk sleeves", TEXT)]),
+        ]
+    else:
+        info = [(k, [(v, TEXT)]) for k, v in [
+            ("Rack", "42U · 12x HP EliteDesk 800 G1"),
+            ("Online", "4 / 12 nodes"),
+            ("CPU", "i5-4570S · 4 cores · 8 GB each"),
+            ("Cluster", "k3s HA · 3 servers · embedded etcd"),
+            ("Database", "CloudNativePG · Postgres x3"),
+            ("Virt", "Proxmox VE 9 · private game hosting"),
+            ("Ingress", "Cloudflare Tunnel → Traefik"),
+            ("Failover", "~60 s · tested by pulling the plug"),
+            ("Switch", "D-Link DGS-1224T · 24x GbE"),
+            ("Mounts", "3D-printed EliteDesk sleeves"),
+        ]]
     rows = [
         [("donnie", MINT, 700), ("@", TEXT), ("homelab", MINT, 700)],
         [("─" * 14, DIM)],
-    ] + [[(f"{k:<10}", MINT, 700), (v, TEXT)] for k, v in info]
+    ] + [[(f"{k:<10}", MINT, 700)] + v for k, v in info]
     for i, segs in enumerate(rows):
         body.append(grid(ix, 108 + i * lh, segs, fs).replace("</text>", hidden_until(t_out + i * 0.035) + "</text>"))
     by = 108 + len(rows) * lh - 6
     blocks = ["#21262D", "#F85149", GREEN, "#D29922", BLUE, "#BC8CFF", "#39C5CF", TEXT]
     for i, c in enumerate(blocks):
         body.append(f'<rect x="{ix + i * 30}" y="{by}" width="26" height="14" rx="2" fill="{c}">{hidden_until(t_out + 0.45)}</rect>')
+
+    if live:
+        stamp = f"live · {live['stamp']}"
+        sx = w - 18 - len(stamp) * 7.2
+        body.append(
+            f'<circle cx="{sx - 10:.1f}" cy="18" r="6" fill="{GREEN}" opacity="0">'
+            f'<animate attributeName="r" values="3;8" dur="1.8s" repeatCount="indefinite"/>'
+            f'<animate attributeName="opacity" values="0.5;0" dur="1.8s" repeatCount="indefinite"/></circle>'
+            f'<circle cx="{sx - 10:.1f}" cy="18" r="3.5" fill="{GREEN}"/>'
+            + grid(sx, 22, [("live", GREEN, 700), (f" · {live['stamp']}", DIM)], 12)
+        )
 
     return svg(w, h, "neofetch of Donnie's homelab: 42U rack with 12 HP EliteDesk nodes, k3s HA cluster and Proxmox",
                window(w, h, "donnie@homelab: ~ — neofetch") + f"<defs>{''.join(defs)}</defs>" + "".join(body) + scanlines(w, h))
