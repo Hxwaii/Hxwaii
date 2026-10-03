@@ -42,15 +42,6 @@ I build Discord bots, websites and FiveM scripts, and I host most of it myself o
 
 ---
 
-<h2 align="center">🔥 Current Focus</h2>
-
-<p align="center">
-Shipping <a href="https://getocto.gg"><b>Octo</b></a> in 6 languages, 3D-printing rack mounts for my EliteDesk nodes<br>
-and building my own game-server panel on Proxmox.
-</p>
-
----
-
 <h2 align="center">🚀 Projects</h2>
 
 <table align="center">
