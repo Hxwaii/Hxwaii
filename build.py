@@ -16,6 +16,7 @@ CYAN = "#22D3EE"
 AMBER = "#E3B341"
 OFF = "#2A313B"
 RED = "#F85149"
+PURPLE = "#BC8CFF"
 
 PROMPT = [("donnie@homelab", GREEN, 700), (":", TEXT), ("~", BLUE, 700), ("$", TEXT)]
 PROMPT_LEN = len("donnie@homelab:~$ ")
@@ -172,7 +173,7 @@ def neofetch(live=None):
             )
     rack.append(f'<circle cx="{inner_x + inner_w - 12}" cy="{sy + unit / 2}" r="2.6" fill="{GREEN}"/>')
 
-    roles = {1: ("k3s", GREEN), 2: ("k3s", GREEN), 3: ("k3s", GREEN), 4: ("pve", CYAN)}
+    roles = {1: ("k3s", GREEN), 2: ("k3s", GREEN), 3: ("k3s", GREEN), 4: ("pve", CYAN), 5: ("pve", CYAN), 6: ("ubuntu", PURPLE)}
     up = {n: (live["up"].get(n, False) if live else True) for n in roles}
     for n in range(1, 13):
         uy = ry + 8 + n * (unit + gap)
@@ -220,7 +221,7 @@ def neofetch(live=None):
             ("Cluster", [("k3s HA · ", TEXT), (f"{k_up}/3", GREEN if k_up == 3 else RED, 700), (" nodes reachable", TEXT)]),
             ("Proxmox", [("node-04 · up ", TEXT), (duration(pve["uptime"]) if pve else "n/a", CYAN, 700)]),
             ("Load", [(f"CPU {pve['cpu'] * 100:.0f}% · RAM {pve['mem'] * 100:.0f}%" if pve else "n/a", TEXT)]),
-            ("CPU", [("i5-4570S · 4 cores · 8 GB each", TEXT)]),
+            ("CPU", [("Haswell i5 · 4 cores · 8 GB each", TEXT)]),
             ("Database", [("CloudNativePG · Postgres x3", TEXT)]),
             ("Ingress", [("Cloudflare Tunnel → Traefik", TEXT)]),
             ("Failover", [("~60 s · tested by pulling the plug", TEXT)]),
@@ -229,11 +230,11 @@ def neofetch(live=None):
     else:
         info = [(k, [(v, TEXT)]) for k, v in [
             ("Rack", "42U · 12x HP EliteDesk 800 G1"),
-            ("Online", "4 / 12 nodes"),
-            ("CPU", "i5-4570S · 4 cores · 8 GB each"),
+            ("Online", "6 / 12 nodes"),
+            ("CPU", "Haswell i5 · 4 cores · 8 GB each"),
             ("Cluster", "k3s HA · 3 servers · embedded etcd"),
             ("Database", "CloudNativePG · Postgres x3"),
-            ("Virt", "Proxmox VE 9 · private game hosting"),
+            ("Virt", "Proxmox VE 9 · 2 nodes · own game panel"),
             ("Ingress", "Cloudflare Tunnel → Traefik"),
             ("Failover", "~60 s · tested by pulling the plug"),
             ("Switch", "D-Link DGS-1224T · 24x GbE"),
