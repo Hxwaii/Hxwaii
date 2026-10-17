@@ -1,0 +1,19 @@
+name: discord widget
+
+on:
+  push:
+    branches: [main]
+    paths: [README.md, widget/**]
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    env:
+      DISCORD_APP_ID: ${{ vars.DISCORD_APP_ID }}
+      DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - if: env.DISCORD_APP_ID != '' && env.DISCORD_BOT_TOKEN != ''
+        run: python3 widget/sync.py
