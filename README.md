@@ -56,6 +56,4 @@ Developer from Germany.<br>
 
 <p align="center">
   <a href="https://donn1eh.xyz"><img src="https://img.shields.io/badge/Website-donn1eh.xyz-0d1117?style=for-the-badge&logo=googlechrome&logoColor=white" alt="Website"></a>
-  <a href="https://discord.gg/getocto"><img src="https://img.shields.io/badge/Discord-Octo%20Server-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Discord"></a>
-  <a href="https://codegraf.studio"><img src="https://img.shields.io/badge/CodeGraf-codegraf.studio-1F2BFF?style=for-the-badge&logoColor=white" alt="CodeGraf"></a>
 </p>
