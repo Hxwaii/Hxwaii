@@ -1,6 +1,6 @@
 <div align="center">
 
-<a href="https://discord.com/users/476086469296128000"><img src="https://lanyard.cnrad.dev/api/476086469296128000?idleMessage=Probably%20building%20something%20on%20the%20homelab" alt="Discord presence"></a>
+<a href="https://discord.com/users/476086469296128000"><img src="https://presence.unpatched.wtf/presence.svg" alt="Discord presence"></a>
 
 </div>
 
